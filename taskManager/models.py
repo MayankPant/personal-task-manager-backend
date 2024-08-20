@@ -1,14 +1,12 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser
+from django.contrib.auth import get_user_model
 from django.utils import timezone
+import django.conf.global_settings as settings
 
 # the user tabe wont be managed by taskManager migrations but will allow its reference
-class User(AbstractUser):
-    # We're extending Django's built-in User model
-    # If you need additional fields, add them here
-    class Meta:
-        managed=False
-        db_table='auth_user'
+
+User = get_user_model()
 
 class Task(models.Model):
     PRIORITY_CHOICES = [

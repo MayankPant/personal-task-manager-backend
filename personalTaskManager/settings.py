@@ -78,6 +78,10 @@ TEMPLATES = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+]
+
 WSGI_APPLICATION = 'personalTaskManager.wsgi.application'
 
 
@@ -92,14 +96,6 @@ DATABASES = {
         'PASSWORD': env('DB_PASSWORD'),
         'HOST': env('DB_HOST'),
         'PORT': env('DB_PORT'),
-    },
-    'auth_db': {
-        'ENGINE': env('DB_ENGINE'),
-        'NAME': 'commeatus-core-auth',
-        'USER': env('DB_USER'),
-        'PASSWORD': env('DB_PASSWORD'),
-        'HOST': env('DB_HOST'),
-        'PORT':  env('DB_PORT'),
     }
 }
 
