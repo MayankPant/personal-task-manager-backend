@@ -1,12 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser
-from django.contrib.auth import get_user_model
 from django.utils import timezone
 import django.conf.global_settings as settings
 
-# the user tabe wont be managed by taskManager migrations but will allow its reference
 
-User = get_user_model()
 
 class Task(models.Model):
     PRIORITY_CHOICES = [
@@ -27,13 +23,12 @@ class Task(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tasks')
-
+    user_id = models.IntegerField()
     def __str__(self):
         return self.title
 
 class Analytics(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='analytics')
+    user_id = models.IntegerField()    
     date = models.DateField()
     tasks_completed = models.IntegerField(default=0)
     tasks_created = models.IntegerField(default=0)
@@ -42,8 +37,8 @@ class Analytics(models.Model):
     low_priority_tasks = models.IntegerField(default=0)
 
     class Meta:
-        unique_together = ['user', 'date']
+        unique_together = ['user_id', 'date']
         verbose_name_plural = 'Analytics'
 
     def __str__(self):
-        return f"Analytics for {self.user.username} on {self.date}"
+        return f"Analytics for {self.user_id} on {self.date}"
