@@ -12,6 +12,7 @@ from pathlib import Path
 import dotenv
 import json
 from datetime import datetime
+from .utils import capitalize
 
 
 
@@ -21,7 +22,9 @@ dotenv.load_dotenv(BASE_DIR.joinpath("dev.env"))
 @api_view(['POST'])
 def save_task(request: HttpRequest):
     headers, payload = request.headers, json.loads(request.body)
+    print(f"Headers: {headers} \n Payload: {payload}")
     accessToken = headers.get('Authorization').split(" ")[1]
+    
     print(headers.get("Authorization"))
     response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
     print(f"Response from Auth: {response.text}")
@@ -38,13 +41,13 @@ def save_task(request: HttpRequest):
         date_format = "%Y-%m-%d"
         due_date = datetime.strptime(due_date, date_format)
         print(f"Converted date: {type(due_date)}  {due_date}")
-        task_status = payload['status']
+        task_status = capitalize(payload['status'])
         print(task_status)
-        priority = payload['priority']
+        priority = capitalize(payload['priority'])
         print(priority)
         # add user id to payload
         payload['user_id'] = user_id
-        print(payload)
+        
         payload = {
             "title": title,
             "description": description,
@@ -53,6 +56,7 @@ def save_task(request: HttpRequest):
             "status": task_status,
             "user_id": user_id
         }
+        print(payload)
         serializer = TaskSerializer(data=payload)
         if serializer.is_valid():
             serializer.save()
