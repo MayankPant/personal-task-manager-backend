@@ -29,7 +29,7 @@ class Task(models.Model):
 
 class Analytics(models.Model):
     user_id = models.IntegerField()    
-    date = models.DateField()
+    date = models.DateTimeField(auto_now_add=True)
     tasks_completed = models.IntegerField(default=0)
     tasks_created = models.IntegerField(default=0)
     high_priority_tasks = models.IntegerField(default=0)

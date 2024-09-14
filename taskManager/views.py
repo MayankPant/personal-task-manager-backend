@@ -23,7 +23,6 @@ dotenv.load_dotenv(BASE_DIR.joinpath("dev.env"))
 def save_task(request: HttpRequest):
     headers, payload = request.headers, json.loads(request.body)
     print(f"Headers: {headers} \n Payload: {payload}")
-    accessToken = headers.get('Authorization').split(" ")[1]
     
     print(headers.get("Authorization"))
     response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
@@ -58,11 +57,36 @@ def save_task(request: HttpRequest):
         }
         print(payload)
         serializer = TaskSerializer(data=payload)
-        if serializer.is_valid():
+        
+        
+        #updating the anaylytics for this uer
+        print("Type and date of task creation", type(datetime.today().strftime('%Y-%m-%d')), datetime.today().strftime('%Y-%m-%d'))
+        analytics = {
+            "user_id":user_id,
+            "tasks_created":1,
+            "high_priority_tasks": 1 if priority == "High" else 0,
+            "medium_priority_tasks": 1 if priority == "Medium" else 0,
+            "low_priority_tasks": 1 if priority == "Low" else 0,
+        }
+        print(f"Analytics: {analytics}")
+        analytics_serializer =AnalyticsSerializer(data=analytics)
+        
+        
+        
+        if serializer.is_valid() and analytics_serializer.is_valid():
             serializer.save()
+            analytics_serializer.save()
             return Response(data={"details" : "Task saved"}, status=status.HTTP_202_ACCEPTED)
         else:
+            print(analytics_serializer.error_messages)
             return Response(data={"details" : "unsaved task"}, status=status.HTTP_406_NOT_ACCEPTABLE)
-    else:
-        return Response(status=response.status_code)
+    elif response.status_code == 401:
+        """
+        If the access token expires, we send a response ton client
+        to generate a new access token using the refresh token
+        """
+        return Response(data={"details" : "unsaved task"}, status=status.HTTP_401_UNAUTHORIZED)
+
+            
+
 
