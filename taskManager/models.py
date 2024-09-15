@@ -37,7 +37,6 @@ class Analytics(models.Model):
     low_priority_tasks = models.IntegerField(default=0)
 
     class Meta:
-        unique_together = ['user_id', 'date']
         verbose_name_plural = 'Analytics'
 
     def __str__(self):
