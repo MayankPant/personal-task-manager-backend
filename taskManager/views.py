@@ -12,7 +12,7 @@ from pathlib import Path
 import dotenv
 import json
 from datetime import datetime
-from .utils import capitalize
+from .utils import capitalize, parse_user_data
 
 
 
@@ -89,4 +89,25 @@ def save_task(request: HttpRequest):
 
             
 
-
+@api_view(['GET'])
+def analytics(request: HttpRequest):
+    headers = request.headers
+    print(f"Headers: {headers}")
+    
+    print(headers.get("Authorization"))
+    response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
+    print(f"Response from Auth: {response.text}")
+    if response.status_code == 200:
+        response = json.loads(response.text)
+        user_id = response['user'].get('id')
+        user_analytics = Analytics.objects.filter(user_id=user_id)
+        user_tasks = Task.objects.filter(user_id=user_id)
+        print(f"User data: {user_tasks} \n {user_analytics}")
+        user_data = parse_user_data(user_tasks)
+        return Response(data=user_data, status=status.HTTP_207_MULTI_STATUS)
+    elif response.status_code == 401:
+        """
+        If the access token expires, we send a response ton client
+        to generate a new access token using the refresh token
+        """
+        return Response(data={"details" : "unsaved task"}, status=status.HTTP_401_UNAUTHORIZED)
