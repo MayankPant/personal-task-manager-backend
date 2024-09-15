@@ -103,7 +103,7 @@ def analytics(request: HttpRequest):
         user_analytics = Analytics.objects.filter(user_id=user_id)
         user_tasks = Task.objects.filter(user_id=user_id)
         print(f"User data: {user_tasks} \n {user_analytics}")
-        user_data = parse_user_data(user_tasks)
+        user_data = parse_user_data(user_tasks, 3)
         return Response(data=user_data, status=status.HTTP_207_MULTI_STATUS)
     elif response.status_code == 401:
         """
