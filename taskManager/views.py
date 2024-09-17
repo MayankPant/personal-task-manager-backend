@@ -90,9 +90,17 @@ def save_task(request: HttpRequest):
             
 
 @api_view(['GET'])
-def analytics(request: HttpRequest):
+def analytics(request: HttpRequest, rows):
     headers = request.headers
     print(f"Headers: {headers}")
+    if rows is not None:
+        try:
+            rows = int(rows)
+            # Now you can safely use 'rows' as an integer
+            
+        except ValueError:
+            rows=-1
+
     
     print(headers.get("Authorization"))
     response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
@@ -103,7 +111,7 @@ def analytics(request: HttpRequest):
         user_analytics = Analytics.objects.filter(user_id=user_id)
         user_tasks = Task.objects.filter(user_id=user_id)
         print(f"User data: {user_tasks} \n {user_analytics}")
-        user_data = parse_user_data(user_tasks, 3)
+        user_data = parse_user_data(user_tasks, rows)
         return Response(data=user_data, status=status.HTTP_207_MULTI_STATUS)
     elif response.status_code == 401:
         """

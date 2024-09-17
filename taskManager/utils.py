@@ -19,7 +19,7 @@ def parse_user_data(user_tasks, no_of_tasks: int) -> list:
     print(f"sorted user tasks: {user_tasks} \n\n\n\n\n")
 
     five_urgent_tasks = []
-    for task in user_tasks[0:no_of_tasks]:
+    for task in user_tasks[0:no_of_tasks if no_of_tasks >= 0 else len(user_tasks)]:
         five_urgent_tasks.append({
             "title" : task.title,
             "description":task.description,
