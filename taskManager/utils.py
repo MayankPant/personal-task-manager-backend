@@ -21,6 +21,7 @@ def parse_user_data(user_tasks, no_of_tasks: int) -> list:
     five_urgent_tasks = []
     for task in user_tasks[0:no_of_tasks if no_of_tasks >= 0 else len(user_tasks)]:
         five_urgent_tasks.append({
+            "task_id": task.id,
             "title" : task.title,
             "description":task.description,
             "due_date":task.due_date.strftime('%Y-%m-%d'),
