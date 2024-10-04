@@ -28,7 +28,7 @@ class Task(models.Model):
         return self.title
 
 class Analytics(models.Model):
-    user_id = models.IntegerField()    
+    user_id = models.IntegerField(primary_key=True)    
     date = models.DateTimeField(auto_now_add=True)
     tasks_completed = models.IntegerField(default=0)
     tasks_created = models.IntegerField(default=0)

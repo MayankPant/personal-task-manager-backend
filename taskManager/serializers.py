@@ -12,5 +12,5 @@ class AnalyticsSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Analytics
-        fields = ['id', 'user_id', 'date', 'tasks_completed', 'tasks_created', 'high_priority_tasks', 'medium_priority_tasks', 'low_priority_tasks']
+        fields = ['user_id', 'date', 'tasks_completed', 'tasks_created', 'high_priority_tasks', 'medium_priority_tasks', 'low_priority_tasks']
 
