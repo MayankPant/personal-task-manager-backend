@@ -75,8 +75,23 @@ def save_task(request):
                 serializer.save()
                 analytics_serializer.save()
                 operation = "updated"
-                return Response({"detail": f"Task {operation} successfully"}, status=status.HTTP_202_ACCEPTED)
+                task = TaskSerializer(get_object_or_404(Task, id=task_id, user_id=user_id)).data
+                print(f"\n\n\n\n Edited Task: {task}")
                 
+                
+                # parsing the task data before sending it to frontend
+                task_id = task["id"]
+                del task["id"]
+                task["task_id"] = task_id
+                dueDate = task["due_date"]
+                dueDate = datetime.strptime(dueDate, "%Y-%m-%dT%H:%M:%SZ")
+                print(f"Converted str to date object: ", dueDate)
+                dueDate = dueDate.date()
+                task["due_date"] = dueDate
+                print(f"\n\n\n This date object type: {type(dueDate)}")
+                return Response({"detail": f"Task {operation} successfully", "task_edited": task}, status=status.HTTP_202_ACCEPTED)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
             # Create case: POST request
             serializer = TaskSerializer(data={
