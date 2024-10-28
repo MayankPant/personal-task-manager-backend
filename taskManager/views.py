@@ -13,6 +13,9 @@ import dotenv
 import json
 from datetime import datetime
 from .utils import capitalize, parse_user_data
+import logging
+
+logger = logging.getLogger('django')
 
 
 
@@ -22,10 +25,10 @@ dotenv.load_dotenv(BASE_DIR.joinpath("dev.env"))
 @api_view(['POST', 'PUT'])
 def save_task(request):
     headers, payload = request.headers, json.loads(request.body)
-    print(f"Headers: {headers} \n Payload: {payload}")
+    logger.info(f"Headers: {headers} \n Payload: {payload}")
 
     auth_response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
-    print(f"Response from Auth: {auth_response.text}")
+    logger.info(f"Response from Auth: {auth_response.text}")
     
     if auth_response.status_code == 200:
         auth_data = json.loads(auth_response.text)
@@ -76,7 +79,7 @@ def save_task(request):
                 analytics_serializer.save()
                 operation = "updated"
                 task = TaskSerializer(get_object_or_404(Task, id=task_id, user_id=user_id)).data
-                print(f"\n\n\n\n Edited Task: {task}")
+                logger.info(f"\n\n\n\n Edited Task: {task}")
                 
                 
                 # parsing the task data before sending it to frontend
@@ -85,10 +88,10 @@ def save_task(request):
                 task["task_id"] = task_id
                 dueDate = task["due_date"]
                 dueDate = datetime.strptime(dueDate, "%Y-%m-%dT%H:%M:%SZ")
-                print(f"Converted str to date object: ", dueDate)
+                logger.info(f"Converted str to date object: ", dueDate)
                 dueDate = dueDate.date()
                 task["due_date"] = dueDate
-                print(f"\n\n\n This date object type: {type(dueDate)}")
+                logger.info(f"\n\n\n This date object type: {type(dueDate)}")
                 return Response({"detail": f"Task {operation} successfully", "task_edited": task}, status=status.HTTP_202_ACCEPTED)
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -131,16 +134,16 @@ def save_task(request):
 @api_view(['DELETE'])
 def delete_task(request: HttpRequest, task_id):
     headers = request.headers
-    print(f"Headers: {headers} \n\n\n\n")
-    print(headers.get("Authorization"))
+    logger.info(f"Headers: {headers} \n\n\n\n")
+    logger.info(headers.get("Authorization"))
     response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
-    print(f"Response from Auth: {response.text}")
+    logger.info(f"Response from Auth: {response.text}")
     if response.status_code == 200:
         response = json.loads(response.text)
         user_id = response['user'].get('id')
         task = get_object_or_404(Task, id=task_id, user_id=user_id)  # Ensure the task belongs to the user
         user_analytics = get_object_or_404(Analytics, user_id=user_id)
-        print(f"User analytics: {user_analytics}")
+        logger.info(f"User analytics: {user_analytics}")
         analytics = {
             "user_id": user_id,
             "tasks_completed": user_analytics.tasks_completed - 1 if task.status == 'Completed' else user_analytics.tasks_completed,  # Only increment for new tasks
@@ -169,7 +172,7 @@ def delete_task(request: HttpRequest, task_id):
 @api_view(['GET'])
 def analytics(request: HttpRequest, rows):
     headers = request.headers
-    print(f"Headers: {headers}")
+    logger.info(f"Headers: {headers}")
     if rows is not None:
         try:
             rows = int(rows)
@@ -179,16 +182,17 @@ def analytics(request: HttpRequest, rows):
             rows=-1
 
     
-    print(headers.get("Authorization"))
+    logger.info(headers.get("Authorization"))
     response = requests.post('http://127.0.0.1:8000/api/auth/user', headers={"Authorization": headers.get("Authorization")})
-    print(f"Response from Auth: {response.text}")
+    logger.info(f"Response from Auth: {response.text}")
     if response.status_code == 200:
         response = json.loads(response.text)
         user_id = response['user'].get('id')
-        user_analytics = Analytics.objects.filter(user_id=user_id)
+        user_analytics = Analytics.objects.get(user_id=user_id)
         user_tasks = Task.objects.filter(user_id=user_id)
-        print(f"User data: {user_tasks} \n {user_analytics}")
+        logger.info(f"User data: {user_tasks} \n {user_analytics}")
         user_data = parse_user_data(user_tasks, rows)
+        user_data["user_analytics"] = AnalyticsSerializer(user_analytics).data
         return Response(data=user_data, status=status.HTTP_207_MULTI_STATUS)
     elif response.status_code == 401:
         """
